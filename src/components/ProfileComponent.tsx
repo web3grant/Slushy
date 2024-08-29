@@ -1,15 +1,10 @@
-"use client"
-
+// components/ProfileComponent.tsx
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { VerifiedIcon, ExternalLinkIcon, ChevronUpIcon, MailIcon } from "lucide-react"
 import { TwitterIcon, InstagramIcon, YoutubeIcon, LinkedinIcon } from "lucide-react"
-
-
-
-import { DynamicWidget } from "@dynamic-labs/sdk-react-core"
 
 const StatusTag = ({ status }: { status: string }) => {
   const colors: { [key: string]: string } = {
@@ -24,19 +19,16 @@ const StatusTag = ({ status }: { status: string }) => {
   )
 }
 
-const ProjectCard = ({ icon, name, status = null }: { icon: string; name: string; status?: string | null }) => (
+const ProjectCard = ({ icon, name, status = null, url }: { icon: string; name: string; status?: string | null; url: string }) => (
   <div className="bg-[#1C1C1C] hover:bg-[#222121] rounded-xl p-3 flex items-center justify-between group transition-colors duration-200">
-     <div className="mb-4">
-          
-        </div>
     <img src={icon} alt={name} className="w-10 h-10 rounded-xl" />
     <div className="flex-grow text-center">
       <h3 className="text-white text-base font-medium">{name}</h3>
       {status && <StatusTag status={status} />}
     </div>
-    <button className="focus:outline-none">
+    <a href={url} target="_blank" rel="noopener noreferrer" className="focus:outline-none">
       <ExternalLinkIcon className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors duration-200" />
-    </button>
+    </a>
   </div>
 )
 
@@ -51,69 +43,83 @@ const SectionContainer = ({ title, children }: { title: string; children: React.
   </div>
 )
 
-import { useDynamicContext } from "@dynamic-labs/sdk-react-core"
+// Define the ProfileType interface here instead of importing it
+interface ProfileType {
+  avatar: string;
+  username: string;
+  bio: string;
+  social_media_links: Array<{ id: string; url: string; platform: string }>;
+  projects: Array<{
+    id: string;
+    image_url: string;
+    name: string;
+    status: string;
+    url: string;
+  }>;
+  favorite_apps: Array<{ id: string; image_url: string; app_name: string }>;
+}
 
-export default function Component() {
-  const { user, isAuthenticated } = useDynamicContext()
-
+export default function ProfileComponent({ profile }: { profile: ProfileType }) {
   return (
     <div className="bg-[#111111] text-white">
       <div className="max-w-2xl mx-auto px-4 pb-20 md:px-8 pt-12">
-        <div className="mb-4">
-          <DynamicWidget />
-        </div>
-        {isAuthenticated ? (
-          <p className="text-center mb-4">Welcome, {user?.email || 'User'}!</p>
-        ) : (
-          <p className="text-center mb-4"></p>
-        )}
         {/* Profile Section */}
         <div className="text-center mb-8">
           <Avatar className="w-32 h-32 mx-auto border-3 border-white object-cover">
-            <AvatarImage src="slushy_logo.png" 
+            <AvatarImage src={profile.avatar || "slushy_logo.png"} 
               alt="Profile picture" 
               className="w-full h-full object-cover"
             />
           </Avatar>
           <h1 className="text-3xl font-bold flex items-center justify-center gap-2 mt-4">
-            Slushy <VerifiedIcon className="w-5 h-5 text-blue-400" />
+            {profile.username} <VerifiedIcon className="w-5 h-5 text-blue-400" />
           </h1>
-          
+
           <p className="mt-4 text-[#7E7E7E] text-base font-light px-3">
-            Building shit in defi that I think is cool. Follow along all of my projects and check out the AI tools I am using to scale my businesses.
+            {profile.bio}
           </p>
         </div>
         {/* Social Media Icons */}
         <div className="flex justify-center space-x-6 mb-6">
-          <button className="text-[#7E7E7E] hover:text-white transition-colors">
-            <TwitterIcon className="h-6 w-6" />
-          </button>
-          <button className="text-[#7E7E7E] hover:text-white transition-colors">
-            <InstagramIcon className="h-6 w-6" />
-          </button>
-          <button className="text-[#7E7E7E] hover:text-white transition-colors">
-            <YoutubeIcon className="h-6 w-6" />
-          </button>
-          <button className="text-[#7E7E7E] hover:text-white transition-colors">
-            <LinkedinIcon className="h-6 w-6" />
-          </button>
+          {profile.social_media_links.map((link: { id: string; url: string; platform: string }) => (
+            <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="text-[#7E7E7E] hover:text-white transition-colors">
+              {link.platform === 'twitter' && <TwitterIcon className="h-6 w-6" />}
+              {link.platform === 'instagram' && <InstagramIcon className="h-6 w-6" />}
+              {link.platform === 'youtube' && <YoutubeIcon className="h-6 w-6" />}
+              {link.platform === 'linkedin' && <LinkedinIcon className="h-6 w-6" />}
+            </a>
+          ))}
         </div>
-
 
         {/* My Projects Section */}
         <SectionContainer title="My Projects">
-          <ProjectCard icon="product1.png" name="Interior AI" status="ACTIVE" />
-          <ProjectCard icon="product2.png" name="Penpal AI" status="ACTIVE" />
-          <ProjectCard icon="product3.png" name="Intovid" status="ACQUIRED" />
-          <ProjectCard icon="product4.png" name="Recruiter AI" status="DISCONTINUED" />
+          {profile.projects.map((project: {
+            id: string;
+            image_url: string;
+            name: string;
+            status: string;
+            url: string;
+          }) => (
+            <ProjectCard 
+              key={project.id}
+              icon={project.image_url}
+              name={project.name}
+              status={project.status}
+              url={project.url}
+            />
+          ))}
         </SectionContainer>
 
         {/* Stack Section */}
         <SectionContainer title="Stack">
-          <ProjectCard icon="product3.png" name="Interior AI" />
-          <ProjectCard icon="product1.png" name="Penpal AI" />
-          <ProjectCard icon="product4.png" name="Intovid" />
-          <ProjectCard icon="product2.png" name="Recruiter AI" />
+          {profile.favorite_apps.map((app: { id: string; image_url: string; app_name: string }) => (
+            <ProjectCard 
+              key={app.id}
+              icon={app.image_url}
+              name={app.app_name}
+              url="#" // Adding a default URL to satisfy the type requirement
+            />
+          ))}
         </SectionContainer>
 
         {/* Leave a message form */}
